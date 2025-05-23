@@ -12,6 +12,26 @@ export interface User {
   updatedAt: string;
 }
 
+export interface Member {
+  id: string;
+  userId: string;
+  department: string;
+  position: string;
+  hireDate: string;
+  status: 'active' | 'inactive' | 'on_leave';
+  createdAt: string;
+  updatedAt: string;
+  user?: User;
+}
+
+export interface ProjectMember {
+  projectId: string;
+  memberId: string;
+  role: 'lead' | 'developer' | 'designer' | 'tester';
+  assignedAt: string;
+  member?: Member;
+}
+
 // Client related types
 export interface Client {
   id: string;
@@ -38,6 +58,9 @@ export interface Project {
   managerId: string;
   createdAt: string;
   updatedAt: string;
+  members?: ProjectMember[];
+  client?: Client;
+  manager?: User;
 }
 
 // Task related types
@@ -54,6 +77,8 @@ export interface Task {
   dueDate?: string;
   estimatedHours?: number;
   parentTaskId?: string;
+  project?: Project;
+  assignee?: User;
 }
 
 // Time entry related types
@@ -66,6 +91,9 @@ export interface TimeEntry {
   hours: number;
   description: string;
   billable: boolean;
+  user?: User;
+  task?: Task;
+  project?: Project;
 }
 
 // Calendar event types
@@ -78,6 +106,8 @@ export interface CalendarEvent {
   type: 'task' | 'milestone' | 'event';
   userId: string;
   projectId?: string;
+  user?: User;
+  project?: Project;
 }
 
 // Authentication types
