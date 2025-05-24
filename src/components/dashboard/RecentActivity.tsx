@@ -1,23 +1,15 @@
 import React from 'react';
-
-interface ActivityItem {
-  id: string;
-  user: {
-    name: string;
-    avatar?: string;
-  };
-  action: string;
-  target: string;
-  timestamp: string;
-}
+import { ActivityItem } from '../../store/activityStore';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface RecentActivityProps {
   activities: ActivityItem[];
 }
 
 const RecentActivity: React.FC<RecentActivityProps> = ({ activities }) => {
+  const navigate = useNavigate();
   return (
-    <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-200">
+    <div className="bg-white rounded-xl shadow-sm p-5 border border-gray-200">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
       
       <div className="flow-root">
@@ -50,12 +42,24 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ activities }) => {
                   <div className="min-w-0 flex-1">
                     <div>
                       <div className="text-sm">
-                        <a href="#" className="font-medium text-gray-900">
+                        <span className="font-medium text-gray-900">
                           {activity.user.name}
-                        </a>
+                        </span>
                       </div>
                       <p className="mt-0.5 text-sm text-gray-500">
-                        {activity.action} <span className="font-medium text-gray-900">{activity.target}</span>
+                        {activity.action} {
+                          activity.target === 'project' ? (
+                            <Link to={`/projects?id=${activity.targetId}`} className="font-medium text-blue-600 hover:text-blue-800">
+                              project
+                            </Link>
+                          ) : activity.target === 'task' ? (
+                            <Link to={`/tasks?id=${activity.targetId}`} className="font-medium text-blue-600 hover:text-blue-800">
+                              task
+                            </Link>
+                          ) : (
+                            <span className="font-medium text-gray-900">{activity.target}</span>
+                          )
+                        }
                       </p>
                     </div>
                     <div className="mt-2 text-sm text-gray-500">
@@ -70,12 +74,12 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ activities }) => {
       </div>
       
       <div className="mt-6 text-center">
-        <a
-          href="#"
-          className="text-sm font-medium text-blue-600 hover:text-blue-500"
+        <button
+          onClick={() => navigate('/activities')}
+          className="text-sm font-medium text-blue-600 hover:text-blue-500 cursor-pointer"
         >
-          View all activity
-        </a>
+          View all activities
+        </button>
       </div>
     </div>
   );
