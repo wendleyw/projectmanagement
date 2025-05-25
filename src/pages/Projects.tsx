@@ -1,21 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Plus, Search, Filter } from 'lucide-react';
 import PageHeader from '../components/layout/PageHeader';
 import Button from '../components/ui/Button';
 import ProjectCard from '../components/projects/ProjectCard';
+import ProjectForm from '../components/projects/ProjectForm';
+import Modal from '../components/ui/Modal';
 import useProjectStore from '../store/projectStore';
 import useClientStore from '../store/clientStore';
 import useAuthStore from '../store/authStore';
 import useTaskStore from '../store/taskStore';
+import useUserStore from '../store/userStore';
+import { Project as ProjectType } from '../types';
 
 const Projects: React.FC = () => {
   const { projects, fetchProjects } = useProjectStore();
   const { clients, fetchClients } = useClientStore();
   const { tasks, fetchTasks } = useTaskStore();
   const { user } = useAuthStore();
+  const { currentUser } = useUserStore();
   
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [isModalOpen, setIsModalOpen] = useState(false);
   
   // Fetch data
   useEffect(() => {
@@ -24,10 +30,49 @@ const Projects: React.FC = () => {
     fetchTasks();
   }, [fetchProjects, fetchClients, fetchTasks]);
   
-  // Filter projects
-  const filteredProjects = projects.filter(project => {
+  // Apply permissions filter before any other filter
+  const permissionFilteredProjects = useMemo(() => {
+    // If there is no logged in user, return empty array
+    if (!currentUser) return [];
+    
+    // Admins e gerentes podem ver todos os projetos
+    if (currentUser.role === 'admin' || currentUser.role === 'manager') {
+      return projects;
+    }
+    
+    // Para membros, APENAS mostrar projetos onde eles têm tarefas diretamente atribuídas
+    if (currentUser.role === 'member') {
+      // Obter IDs de projetos onde o membro tem tarefas atribuídas
+      const projectIdsWithAssignedTasks = tasks
+        .filter(task => task.assignee_id === currentUser.id)
+        .map(task => task.project_id);
+      
+      // Filtrar projetos para incluir apenas aqueles com tarefas atribuídas
+      return projects.filter(project => projectIdsWithAssignedTasks.includes(project.id));
+    }
+    
+    // Para outros papéis, aplicar verificações de permissão regulares
+    return projects.filter((project: any) => {
+      // Verificar se há permissão específica para o projeto
+      const userProjectIds = currentUser.permissions?.projectIds || [];
+      if (userProjectIds.includes(project.id)) {
+        return true;
+      }
+      
+      // Verificar se o usuário é o gerente do projeto
+      if (project.managerId === currentUser.id) {
+        return true;
+      }
+      
+      return false;
+    });
+  }, [currentUser, projects, tasks]);
+
+  
+  // Apply additional filters (search and status) to permission-filtered projects
+  const filteredProjects = permissionFilteredProjects.filter(project => {
     const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         project.description.toLowerCase().includes(searchTerm.toLowerCase());
+                         (project.description ? project.description.toLowerCase().includes(searchTerm.toLowerCase()) : false);
     
     const matchesStatus = statusFilter === 'all' || project.status === statusFilter;
     
@@ -44,7 +89,11 @@ const Projects: React.FC = () => {
           { label: 'Projects' },
         ]}
         actions={
-          <Button variant="primary" icon={<Plus size={18} />}>
+          <Button 
+            variant="primary" 
+            icon={<Plus size={18} />}
+            onClick={() => setIsModalOpen(true)}
+          >
             New Project
           </Button>
         }
@@ -86,9 +135,9 @@ const Projects: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredProjects.length > 0 ? (
           filteredProjects.map(project => {
-            const client = clients.find(c => c.id === project.clientId);
-            const manager = user;
-            const projectTasks = tasks.filter(t => t.projectId === project.id);
+            const client = clients.find(c => c.id === project.client_id);
+            const manager = user || undefined;
+            const projectTasks = tasks.filter(t => t.project_id === project.id);
             
             return (
               <ProjectCard
@@ -103,12 +152,27 @@ const Projects: React.FC = () => {
         ) : (
           <div className="col-span-full flex flex-col items-center justify-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
             <p className="text-gray-500 mb-4">No projects found.</p>
-            <Button variant="primary" size="sm" icon={<Plus size={16} />}>
+            <Button 
+              variant="primary" 
+              size="sm" 
+              icon={<Plus size={16} />}
+              onClick={() => setIsModalOpen(true)}
+            >
               Create your first project
             </Button>
           </div>
         )}
       </div>
+      
+      {/* Modal for adding a new project */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Add New Project"
+        size="lg"
+      >
+        <ProjectForm onClose={() => setIsModalOpen(false)} />
+      </Modal>
     </div>
   );
 };

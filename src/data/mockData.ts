@@ -1,20 +1,32 @@
 import { User, Client, Project, Task, TimeEntry, CalendarEvent } from '../types';
 
-// Generate a random ID
-const generateId = (): string => Math.random().toString(36).substring(2, 10);
+// Funu00e7u00e3o para gerar IDs aleatou00f3rios (utilizada no notificationStore)
+// Mantida aqui como referencia para futura implementau00e7u00e3o de novos itens
 
-// Generate a random date within the last 30 days
-const generateRecentDate = (): string => {
+// Gerar uma data dentro de um intervalo específico de dias (passados ou futuros)
+const generateDateInRange = (minDays: number, maxDays: number): string => {
   const date = new Date();
-  date.setDate(date.getDate() - Math.floor(Math.random() * 30));
+  const daysToAdd = minDays + Math.floor(Math.random() * (maxDays - minDays));
+  date.setDate(date.getDate() + daysToAdd);
   return date.toISOString();
 };
 
-// Generate a future date within the next 60 days
+// Gerar uma data recente (nos últimos 30 dias)
+const generateRecentDate = (): string => {
+  return generateDateInRange(-30, -1);
+};
+
+// Gerar uma data futura (nos próximos 60 dias)
 const generateFutureDate = (): string => {
-  const date = new Date();
-  date.setDate(date.getDate() + Math.floor(Math.random() * 60) + 1);
-  return date.toISOString();
+  return generateDateInRange(1, 60);
+};
+
+// Gerar um par de datas onde a primeira é sempre anterior à segunda
+export const generateDatePair = (): [string, string] => {
+  const startDate = generateDateInRange(-30, 0); // Data de início entre 30 dias atrás e hoje
+  const endDateObj = new Date(startDate);
+  endDateObj.setDate(endDateObj.getDate() + Math.floor(Math.random() * 90) + 30); // Pelo menos 30 dias depois da data de início
+  return [startDate, endDateObj.toISOString()];
 };
 
 // Mock Users
@@ -112,8 +124,10 @@ export const mockProjects: Project[] = [
     name: 'Website Redesign',
     description: 'Complete redesign of company website with modern UI/UX',
     clientId: 'client1',
-    startDate: generateRecentDate(),
-    endDate: generateFutureDate(),
+    ...(() => {
+      const [start, end] = generateDatePair();
+      return { startDate: start, endDate: end };
+    })(),
     status: 'in-progress',
     budget: 15000,
     managerId: 'user2',
@@ -125,8 +139,10 @@ export const mockProjects: Project[] = [
     name: 'Mobile App Development',
     description: 'Create a native mobile app for iOS and Android',
     clientId: 'client2',
-    startDate: generateRecentDate(),
-    endDate: generateFutureDate(),
+    ...(() => {
+      const [start, end] = generateDatePair();
+      return { startDate: start, endDate: end };
+    })(),
     status: 'planned',
     budget: 25000,
     managerId: 'user2',
@@ -138,8 +154,10 @@ export const mockProjects: Project[] = [
     name: 'Marketing Campaign',
     description: 'Digital marketing campaign for Q4 product launch',
     clientId: 'client1',
-    startDate: generateRecentDate(),
-    endDate: generateFutureDate(),
+    ...(() => {
+      const [start, end] = generateDatePair();
+      return { startDate: start, endDate: end };
+    })(),
     status: 'on-hold',
     budget: 10000,
     managerId: 'user2',
@@ -151,9 +169,17 @@ export const mockProjects: Project[] = [
     name: 'CRM Integration',
     description: 'Integrate new CRM system with existing platform',
     clientId: 'client3',
-    startDate: generateRecentDate(),
-    endDate: generateFutureDate(),
-    actualEndDate: generateRecentDate(),
+    ...(() => {
+      const [start, end] = generateDatePair();
+      // Para projetos completos, a data de término real é anterior à data de término planejada
+      const actualEnd = new Date(start);
+      actualEnd.setDate(actualEnd.getDate() + Math.floor((new Date(end).getTime() - new Date(start).getTime()) / (1000 * 60 * 60 * 24) * 0.8));
+      return { 
+        startDate: start, 
+        endDate: end,
+        actualEndDate: actualEnd.toISOString()
+      };
+    })(),
     status: 'completed',
     budget: 8000,
     managerId: 'user2',
@@ -265,6 +291,19 @@ export const mockTasks: Task[] = [
     startDate: generateRecentDate(),
     dueDate: generateRecentDate(),
     estimatedHours: 20,
+  },
+  {
+    id: 'task9',
+    projectId: 'project1',
+    title: 'Revisar design do sistema',
+    description: 'Revisar e aprovar os componentes de design do sistema',
+    assigneeId: 'user2',
+    priority: 'high',
+    status: 'review',
+    createdAt: generateRecentDate(),
+    startDate: generateRecentDate(),
+    dueDate: generateFutureDate(),
+    estimatedHours: 8,
   },
 ];
 

@@ -1,7 +1,13 @@
 // Core application types
 
+// Re-export all types from auth.ts, project.ts, and task.ts
+export * from './auth';
+export * from './project';
+export * from './task';
+
+// Legacy types - keeping for backward compatibility
 // User related types
-export interface User {
+export interface LegacyUser {
   id: string;
   firstName: string;
   lastName: string;
@@ -21,10 +27,10 @@ export interface Member {
   status: 'active' | 'inactive' | 'on_leave';
   createdAt: string;
   updatedAt: string;
-  user?: User;
+  user?: LegacyUser;
 }
 
-export interface ProjectMember {
+export interface LegacyProjectMember {
   projectId: string;
   memberId: string;
   role: 'lead' | 'developer' | 'designer' | 'tester';
@@ -45,10 +51,11 @@ export interface Client {
 }
 
 // Project related types
-export interface Project {
+export interface LegacyProject {
   id: string;
   name: string;
   description: string;
+  teamMembers?: string[]; // Array de IDs de usuu00e1rios
   clientId: string;
   startDate: string;
   endDate: string;
@@ -58,13 +65,13 @@ export interface Project {
   managerId: string;
   createdAt: string;
   updatedAt: string;
-  members?: ProjectMember[];
+  members?: LegacyProjectMember[];
   client?: Client;
-  manager?: User;
+  manager?: LegacyUser;
 }
 
 // Task related types
-export interface Task {
+export interface LegacyTask {
   id: string;
   projectId: string;
   title: string;
@@ -77,8 +84,8 @@ export interface Task {
   dueDate?: string;
   estimatedHours?: number;
   parentTaskId?: string;
-  project?: Project;
-  assignee?: User;
+  project?: LegacyProject;
+  assignee?: LegacyUser;
 }
 
 // Time entry related types
@@ -91,9 +98,9 @@ export interface TimeEntry {
   hours: number;
   description: string;
   billable: boolean;
-  user?: User;
-  task?: Task;
-  project?: Project;
+  user?: LegacyUser;
+  task?: LegacyTask;
+  project?: LegacyProject;
 }
 
 // Calendar event types
@@ -106,17 +113,21 @@ export interface CalendarEvent {
   type: 'task' | 'milestone' | 'event';
   userId: string;
   projectId?: string;
-  user?: User;
-  project?: Project;
+  user?: LegacyUser;
+  project?: LegacyProject;
 }
 
 // Authentication types
 export interface AuthState {
-  user: User | null;
+  user: LegacyUser | null;
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+  
+  login: (email: string, password: string) => Promise<boolean>;
+  logout: () => Promise<void>;
+  updateUser: (userData: Partial<LegacyUser>) => void;
 }
 
 // UI related types

@@ -1,7 +1,8 @@
 import React from 'react';
-import { TimeEntry, User, Project, Task } from '../../types';
-import { Clock, Play, Pause, StopCircle } from 'lucide-react';
+import { Project, Task, TimeEntry } from '../../types';
+import { Play, Clock, StopCircle, Calendar } from 'lucide-react';
 import Button from '../ui/Button';
+import { Link } from 'react-router-dom';
 
 interface TimeTrackingProps {
   timeEntries: TimeEntry[];
@@ -72,8 +73,14 @@ const TimeTracking: React.FC<TimeTrackingProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-200">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Time Tracking</h3>
+    <div className="bg-white rounded-xl shadow-sm p-5 border border-gray-200">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold text-gray-900">Time Tracking</h3>
+        <Link to="/time-tracking" className="text-sm text-blue-600 hover:text-blue-800 flex items-center">
+          <Calendar size={16} className="mr-1" />
+          View All Time Entries
+        </Link>
+      </div>
       
       {/* Timer Section */}
       <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
@@ -87,7 +94,16 @@ const TimeTracking: React.FC<TimeTrackingProps> = ({
               <p className="text-sm text-gray-600">
                 Currently tracking time for:
               </p>
-              <p className="font-medium text-gray-900">{currentTask.title}</p>
+              <Link to={`/tasks?id=${currentTask.id}`} className="font-medium text-gray-900 hover:text-blue-600">
+                {currentTask.title}
+              </Link>
+              {currentTask.projectId && (
+                <div className="mt-1 text-xs">
+                  <Link to={`/projects/${currentTask.projectId}`} className="text-blue-600 hover:text-blue-800">
+                    {projects.find(p => p.id === currentTask.projectId)?.name || 'View Project'}
+                  </Link>
+                </div>
+              )}
             </div>
           ) : (
             <p className="text-sm text-gray-600 mb-3">Start timer to track time</p>
@@ -138,12 +154,18 @@ const TimeTracking: React.FC<TimeTrackingProps> = ({
                         <Clock className="h-4 w-4 text-gray-400" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">
+                        <Link 
+                          to={`/tasks?id=${entry.taskId}`} 
+                          className="text-sm font-medium text-gray-900 truncate hover:text-blue-600"
+                        >
                           {getTaskName(entry.taskId)}
-                        </p>
-                        <p className="text-xs text-gray-500">
+                        </Link>
+                        <Link 
+                          to={`/projects/${entry.projectId}`} 
+                          className="text-xs text-blue-600 hover:text-blue-800 block"
+                        >
                           {getProjectName(entry.projectId)}
-                        </p>
+                        </Link>
                       </div>
                       <div className="ml-2 text-sm font-medium text-gray-900">
                         {formatDuration(entry.hours)}

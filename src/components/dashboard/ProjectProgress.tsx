@@ -1,5 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Project, Task } from '../../types';
+import { Link } from 'react-router-dom';
+import { Plus } from 'lucide-react';
+import Modal from '../ui/Modal';
+import ProjectForm from '../projects/ProjectForm';
 
 interface ProjectProgressProps {
   projects: Project[];
@@ -7,6 +11,8 @@ interface ProjectProgressProps {
 }
 
 const ProjectProgress: React.FC<ProjectProgressProps> = ({ projects, tasks }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   // Helper function to calculate project progress based on completed tasks
   const calculateProgress = (projectId: string) => {
     const projectTasks = tasks.filter(task => task.projectId === projectId);
@@ -28,8 +34,17 @@ const ProjectProgress: React.FC<ProjectProgressProps> = ({ projects, tasks }) =>
   );
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-200">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Project Progress</h3>
+    <div className="bg-white rounded-xl shadow-sm p-5 border border-gray-200">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold text-gray-900">Project Progress</h3>
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
+        >
+          <Plus size={16} className="mr-1" />
+          New Project
+        </button>
+      </div>
       
       <div className="space-y-5">
         {sortedProjects.length > 0 ? (
@@ -39,7 +54,9 @@ const ProjectProgress: React.FC<ProjectProgressProps> = ({ projects, tasks }) =>
             return (
               <div key={project.id} className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-medium text-gray-900 truncate">{project.name}</h4>
+                  <Link to={`/projects/${project.id}`} className="text-sm font-medium text-gray-900 truncate hover:text-blue-600">
+                    {project.name}
+                  </Link>
                   <span className="text-sm text-gray-500">{progress}%</span>
                 </div>
                 <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -52,28 +69,42 @@ const ProjectProgress: React.FC<ProjectProgressProps> = ({ projects, tasks }) =>
                         : 'bg-green-500'
                     }`}
                     style={{ width: `${progress}%` }}
-                  />
+                  ></div>
                 </div>
               </div>
             );
           })
         ) : (
           <div className="text-center py-4">
-            <p className="text-gray-500">No active projects</p>
+            <p className="text-sm text-gray-500">No active projects found.</p>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="mt-2 text-sm text-blue-600 hover:text-blue-800 flex items-center justify-center mx-auto"
+            >
+              <Plus size={16} className="mr-1" />
+              Create your first project
+            </button>
+          </div>
+        )}
+        
+        {sortedProjects.length > 5 && (
+          <div className="text-center pt-2">
+            <Link to="/projects" className="text-sm text-blue-600 hover:text-blue-800">
+              View all projects
+            </Link>
           </div>
         )}
       </div>
-      
-      {sortedProjects.length > 5 && (
-        <div className="mt-6 text-center">
-          <a
-            href="#"
-            className="text-sm font-medium text-blue-600 hover:text-blue-500"
-          >
-            View all projects
-          </a>
-        </div>
-      )}
+
+      {/* Modal para adicionar novo projeto */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Adicionar Novo Projeto"
+        size="lg"
+      >
+        <ProjectForm onClose={() => setIsModalOpen(false)} />
+      </Modal>
     </div>
   );
 };

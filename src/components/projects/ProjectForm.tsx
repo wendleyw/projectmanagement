@@ -25,12 +25,12 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ onClose }) => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    clientId: '',
-    startDate: new Date().toISOString().split('T')[0],
-    endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    status: 'planned' as 'planned' | 'in-progress' | 'completed' | 'on-hold' | 'cancelled',
+    client_id: '',
+    start_date: new Date().toISOString().split('T')[0],
+    end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    status: 'planned' as 'planned' | 'in_progress' | 'completed' | 'on_hold' | 'cancelled',
     budget: '',
-    managerId: user?.id || ''
+    manager_id: user?.id || ''
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -46,18 +46,18 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ onClose }) => {
       newErrors.description = 'Description is required';
     }
     
-    if (!formData.clientId) {
-      newErrors.clientId = 'Client is required';
+    if (!formData.client_id) {
+      newErrors.client_id = 'Client is required';
     }
     
-    if (!formData.startDate) {
-      newErrors.startDate = 'Data de início é obrigatória';
+    if (!formData.start_date) {
+      newErrors.start_date = 'Data de início é obrigatória';
     }
     
-    if (!formData.endDate) {
-      newErrors.endDate = 'Data de término é obrigatória';
-    } else if (new Date(formData.endDate) <= new Date(formData.startDate)) {
-      newErrors.endDate = 'Data de término deve ser posterior à data de início';
+    if (!formData.end_date) {
+      newErrors.end_date = 'Data de término é obrigatória';
+    } else if (new Date(formData.end_date) <= new Date(formData.start_date)) {
+      newErrors.end_date = 'Data de término deve ser posterior à data de início';
     }
     
     setErrors(newErrors);
@@ -78,16 +78,16 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ onClose }) => {
     if (!validate()) return;
     
     try {
-      // Prepare project data in the format expected by the Supabase API
+      // Os dados já estão no formato esperado pelo Supabase
       const projectData = {
         name: formData.name,
         description: formData.description,
-        client_id: formData.clientId,
-        start_date: formData.startDate,
-        end_date: formData.endDate,
+        client_id: formData.client_id,
+        start_date: formData.start_date,
+        end_date: formData.end_date,
         status: formData.status,
         budget: formData.budget ? parseFloat(formData.budget) : undefined,
-        manager_id: formData.managerId || user?.id
+        manager_id: formData.manager_id || user?.id
       };
       
       console.log('Enviando dados para criar projeto:', projectData);
@@ -144,15 +144,15 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ onClose }) => {
       </div>
 
       <div>
-        <label htmlFor="clientId" className="block text-sm font-medium text-gray-700 mb-1.5">
+        <label htmlFor="client_id" className="block text-sm font-medium text-gray-700 mb-1.5">
           Client*
         </label>
         <select
-          id="clientId"
-          name="clientId"
-          value={formData.clientId}
+          id="client_id"
+          name="client_id"
+          value={formData.client_id}
           onChange={handleChange}
-          className={`block w-full px-3 py-2 border ${errors.clientId ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
+          className={`block w-full px-3 py-2 border ${errors.client_id ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
         >
           <option value="">Select a client</option>
           {clients.map(client => (
@@ -161,45 +161,45 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ onClose }) => {
             </option>
           ))}
         </select>
-        {errors.clientId && <p className="mt-1 text-sm text-red-600">{errors.clientId}</p>}
+        {errors.client_id && <p className="mt-1 text-sm text-red-600">{errors.client_id}</p>}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-1.5">
+          <label htmlFor="start_date" className="block text-sm font-medium text-gray-700 mb-1.5">
             Start Date*
           </label>
           <input
             type="date"
-            id="startDate"
-            name="startDate"
-            value={formData.startDate}
+            id="start_date"
+            name="start_date"
+            value={formData.start_date}
             onChange={handleChange}
-            className={`block w-full px-3 py-2 border ${errors.startDate ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
+            className={`block w-full px-3 py-2 border ${errors.start_date ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
           />
-          {errors.startDate && <p className="mt-1 text-sm text-red-600">{errors.startDate}</p>}
+          {errors.start_date && <p className="mt-1 text-sm text-red-600">{errors.start_date}</p>}
         </div>
 
         <div>
-          <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-1.5">
+          <label htmlFor="end_date" className="block text-sm font-medium text-gray-700 mb-1.5">
             End Date*
           </label>
           <input
             type="date"
-            id="endDate"
-            name="endDate"
-            value={formData.endDate}
+            id="end_date"
+            name="end_date"
+            value={formData.end_date}
             onChange={handleChange}
-            className={`block w-full px-3 py-2 border ${errors.endDate ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
+            className={`block w-full px-3 py-2 border ${errors.end_date ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
           />
-          {errors.endDate && <p className="mt-1 text-sm text-red-600">{errors.endDate}</p>}
+          {errors.end_date && <p className="mt-1 text-sm text-red-600">{errors.end_date}</p>}
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1.5">
-            Status*
+            Status
           </label>
           <select
             id="status"
@@ -217,19 +217,34 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ onClose }) => {
         </div>
 
         <div>
-          <label htmlFor="budget" className="block text-sm font-medium text-gray-700 mb-1.5">
-            Budget
+          <label htmlFor="manager_id" className="block text-sm font-medium text-gray-700 mb-1.5">
+            Manager ID
           </label>
           <input
             type="number"
-            id="budget"
-            name="budget"
-            value={formData.budget}
+            id="manager_id"
+            name="manager_id"
+            value={formData.manager_id}
             onChange={handleChange}
-            placeholder="0.00"
             className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
+      </div>
+
+      <div>
+        <label htmlFor="budget" className="block text-sm font-medium text-gray-700 mb-1.5">
+          Budget
+        </label>
+        <input
+          type="number"
+          id="budget"
+          name="budget"
+          step="0.01"
+          min="0"
+          value={formData.budget}
+          onChange={handleChange}
+          className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+        />
       </div>
 
       <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
