@@ -9,6 +9,7 @@ interface TimeEntryState {
   taskTimeEntries: TimeEntry[];
   isLoading: boolean;
   error: string | null;
+  timerStartTime: number | null;
   
   fetchTimeEntries: () => Promise<void>;
   fetchUserTimeEntries: (userId: string) => Promise<void>;
@@ -17,6 +18,9 @@ interface TimeEntryState {
   createTimeEntry: (timeEntry: Omit<TimeEntry, 'id'>) => Promise<boolean>;
   updateTimeEntry: (id: string, timeEntryData: Partial<TimeEntry>) => Promise<boolean>;
   deleteTimeEntry: (id: string) => Promise<boolean>;
+  startTimer: () => void;
+  stopTimer: () => void;
+  recordTimeEntry: (timeEntry: TimeEntry) => void;
 }
 
 const useTimeEntryStore = create<TimeEntryState>((set, get) => ({
@@ -26,6 +30,7 @@ const useTimeEntryStore = create<TimeEntryState>((set, get) => ({
   taskTimeEntries: [],
   isLoading: false,
   error: null,
+  timerStartTime: null,
   
   fetchTimeEntries: async () => {
     set({ isLoading: true, error: null });
@@ -165,6 +170,21 @@ const useTimeEntryStore = create<TimeEntryState>((set, get) => ({
       set({ error: 'Failed to delete time entry', isLoading: false });
       return false;
     }
+  },
+  
+  // Timer functions
+  startTimer: () => {
+    set({ timerStartTime: Date.now() });
+  },
+  
+  stopTimer: () => {
+    set({ timerStartTime: null });
+  },
+  
+  recordTimeEntry: (timeEntry) => {
+    // Add the time entry to the store
+    const currentEntries = get().timeEntries;
+    set({ timeEntries: [timeEntry, ...currentEntries] });
   }
 }));
 

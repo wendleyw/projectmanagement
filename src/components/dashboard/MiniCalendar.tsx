@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
 import { CalendarEvent } from '../../types';
+import { Link } from 'react-router-dom';
 
 interface MiniCalendarProps {
   events: CalendarEvent[];
@@ -83,13 +84,13 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({ events }) => {
     
     // Day headers (Sun-Sat)
     const dayHeaders = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((dayName, index) => (
-      <div key={`header-${index}`} className="text-center text-xs font-medium text-gray-500">
+      <div key={`header-${index}`} className="text-center text-xs font-medium text-gray-600">
         {dayName}
       </div>
     ));
     
     grid.push(
-      <div key="header-row" className="grid grid-cols-7 gap-1 mb-2">
+      <div key="header-row" className="grid grid-cols-7 gap-1.5 mb-3">
         {dayHeaders}
       </div>
     );
@@ -117,15 +118,19 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({ events }) => {
             <div 
               key={`day-${day}`}
               className={`
-                relative h-8 flex items-center justify-center text-sm cursor-pointer
-                rounded-full hover:bg-gray-100 transition-colors
-                ${isToday ? 'bg-blue-100 font-bold text-blue-700' : 'text-gray-700'}
+                relative h-8 w-8 flex items-center justify-center text-sm cursor-pointer
+                rounded-full transition-all duration-200
+                ${isToday 
+                  ? 'bg-blue-500 font-semibold text-white shadow-sm' 
+                  : hasEventsForDay 
+                    ? 'hover:bg-blue-50 text-gray-800 font-medium' 
+                    : 'hover:bg-gray-50 text-gray-600'}
               `}
               title={dateEvents.length > 0 ? `${dateEvents.length} events` : ''}
             >
               {day}
-              {hasEventsForDay && (
-                <span className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 rounded-full bg-blue-500"></span>
+              {hasEventsForDay && !isToday && (
+                <span className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-blue-500"></span>
               )}
             </div>
           );
@@ -137,7 +142,7 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({ events }) => {
       if (day > daysInMonth && week < 5) break;
       
       grid.push(
-        <div key={`week-${week}`} className="grid grid-cols-7 gap-1 mb-1">
+        <div key={`week-${week}`} className="grid grid-cols-7 gap-1.5 mb-1.5">
           {weekCells}
         </div>
       );
@@ -147,41 +152,41 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({ events }) => {
   };
   
   return (
-    <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-200">
+    <div>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">Calendar</h3>
-        
-        <div className="flex items-center space-x-1">
+        <div className="flex items-center space-x-2">
           <button
             onClick={goToPreviousMonth}
-            className="p-1 rounded-full hover:bg-gray-100 focus:outline-none"
+            className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600 transition-colors duration-200"
+            aria-label="Previous month"
           >
-            <ChevronLeft className="h-5 w-5 text-gray-500" />
+            <ChevronLeft className="h-4 w-4" />
           </button>
+          
+          <h3 className="text-base font-semibold text-gray-800">{formatMonthYear(currentDate)}</h3>
+          
           <button
             onClick={goToNextMonth}
-            className="p-1 rounded-full hover:bg-gray-100 focus:outline-none"
+            className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600 transition-colors duration-200"
+            aria-label="Next month"
           >
-            <ChevronRight className="h-5 w-5 text-gray-500" />
+            <ChevronRight className="h-4 w-4" />
           </button>
         </div>
       </div>
       
-      <h4 className="text-sm font-medium text-gray-700 text-center mb-3">
-        {formatMonthYear(currentDate)}
-      </h4>
-      
-      <div className="calendar-grid">
+      <div className="calendar-grid mt-2">
         {generateCalendarGrid()}
       </div>
       
-      <div className="mt-6 text-center">
-        <a
-          href="#"
-          className="text-sm font-medium text-blue-600 hover:text-blue-500"
+      <div className="mt-4 text-center">
+        <Link
+          to="/calendar"
+          className="text-sm font-medium text-blue-600 hover:text-blue-700 inline-flex items-center transition-colors duration-200"
         >
+          <CalendarIcon size={14} className="mr-1.5" />
           View full calendar
-        </a>
+        </Link>
       </div>
     </div>
   );
